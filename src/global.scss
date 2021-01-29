@@ -1,0 +1,41 @@
+@import "@material/typography/mdc-typography";
+
+html {
+  @include mdc-typography('body1');
+}
+
+h1 {
+  @include mdc-typography('headline1');
+}
+
+h2 {
+  @include mdc-typography('headline2');
+}
+
+h3 {
+  @include mdc-typography('headline3');
+}
+
+h4 {
+  @include mdc-typography('headline4');
+}
+
+h5 {
+  @include mdc-typography('headline5');
+}
+
+h6 {
+  @include mdc-typography('headline6');
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+input, textarea {
+  font-family: "Roboto Mono" !important;
+  font-size: 14px;
+}
+input {
+  font-size: 16px !important;
+}

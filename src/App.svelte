@@ -1,22 +1,14 @@
 <script>
-    // let command = "pjs _.text --html b";
-    // let input = `<foo id="aoeu"><b>Test</b></foo>`
-    // let command = "pjs _.test --json .";
-    // let input = `{"test":444}{"test":123}`;
-    let command = "pjs _.age --csv-header";
-    let input = `name,age
-bruno,33
-abc,11
-xyz,50
-`;
-
-    let lastError = null;
-    let generatedProgram = null;
-    let programOutput = null;
-    let outputTab;
-
     import { PassThrough } from "stream";
     import shellParser from "shell-parser";
+
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text/index';
+    import Tab, {Label as TabLabel, Icon as TabIcon} from '@smui/tab';
+    import TabBar from '@smui/tab-bar';
+    import Button, {Label as ButtonLabel, Icon} from '@smui/button';
+    import List, {Item, Separator, Text, PrimaryText, SecondaryText, Graphic} from '@smui/list';
+    import Menu from '@smui/menu';
 
     import cli from "pjs-tool/lib/cli";
     import generate from "pjs-tool/lib/generate";
@@ -24,6 +16,34 @@ xyz,50
     import jsonIterator from "pjs-tool/lib/json-iterator";
     import htmlIterator from "pjs-tool/lib/html-iterator";
     import xmlIterator from "pjs-tool/lib/xml-iterator";
+
+    let command = "pjs '_.toUpperCase()'";
+    let input = "hello\nbeautiful\nworld";
+    let lastError = null;
+    let generatedProgram = null;
+    let programOutput = null;
+    let outputTab;
+    let copyMenu;
+
+    if (location.hash) {
+        try {
+            let hash = JSON.parse(decodeURIComponent(location.hash).substr(1));
+            command = hash.command;
+            input = hash.input;
+        } catch (error) {
+        }
+    }
+    function setURLHash (command, input) {
+        const hash = encodeURIComponent(JSON.stringify({
+            command, input,
+        }));
+        history.replaceState("", "", "#"+hash);
+    }
+    $: setURLHash(command, input);
+
+    function copyToClipboard (text) {
+        return navigator.clipboard.writeText(text);
+    }
 
     function streamToIterable (stream) {
         // TODO(2021-01-28): Make this truly async instead of loading the entire stream first
@@ -176,17 +196,8 @@ xyz,50
             console.error(error);
         }
     }
-
     $: run(command, input);
 
-    import Button from '@smui/button';
-    import Textfield from '@smui/textfield';
-    import HelperText from '@smui/textfield/helper-text/index';
-    import Tab, {Icon, Label} from '@smui/tab';
-    import TabBar from '@smui/tab-bar';
-import Menu, {SelectionGroup, SelectionGroupIcon} from '@smui/menu';
-      import List, {Item, Separator, Text, PrimaryText, SecondaryText, Graphic} from '@smui/list';
-    let menu;
 </script>
 
 <style>
@@ -205,36 +216,38 @@ main {
     max-width: 1024px;
     margin: auto;
 }
-
-/* .pjs-output { */
-/*     border: none; */
-/* } */
 textarea {
     resize: none;
     border: none;
+    outline: none;
 }
-
 .spacer {
     margin-bottom: 10px;
 }
 </style>
 
 <main class="vbox">
-    <div class="hbox" style="margin: 20px 20px 0 20px">
+    <div style="margin: 0px 20px 0 20px">
+      <h2>pjs playground</h2>
+      <p><a href="https://github.com/aduros/pjs">pjs</a> is a command-line tool for text
+      processing. Try a demo below or check out some <a href="#">examples</a>.</p>
+    </div>
+    <div class="hbox" style="margin: 80px 20px 0 20px">
         <div class="flex1">
             <Textfield bind:value={command} style="width: 100%"></Textfield>
             <HelperText persistent style="color: red">{lastError ? lastError.message : ""}</HelperText>
         </div>
         <div style="margin-top: 10px">
-            <Button on:click={() => menu.setOpen(true)}>Examples</Button>
-            <Menu bind:this={menu}>
+            <Button on:click={() => copyMenu.setOpen(true)}>
+                <Icon class="material-icons">content_copy</Icon>
+                <ButtonLabel>Copy</ButtonLabel>
+            </Button>
+            <Menu bind:this={copyMenu}>
                 <List>
-                <Item><Text>Example 1</Text></Item>
-                <Item><Text>Example 2</Text></Item>
-                <Item><Text>Example 3</Text></Item>
-                <Separator />
-                <Item><Text>Example 4</Text></Item>
-                <Item><Text>Example 5</Text></Item>
+                    <Item on:click={() => copyToClipboard(command)}><Graphic class="material-icons">code</Graphic> <Text>Copy pjs command</Text></Item>
+                    <Separator />
+                    <Item on:click={() => copyToClipboard(location.href)}><Graphic class="material-icons">link</Graphic> <Text>Copy playground URL</Text></Item>
+                    <Item on:click={() => copyToClipboard(`[\`${command}\`](${location.href})`)}><Graphic class="material-icons">link</Graphic> <Text>Copy playground markdown</Text></Item>
                 </List>
             </Menu>
         </div>
@@ -244,7 +257,7 @@ textarea {
             <div class="spacer">
                 <TabBar tabs={["Input"]} let:tab>
                     <Tab {tab} minWidth>
-                        <Label>{tab}</Label>
+                        <TabLabel>{tab}</TabLabel>
                     </Tab>
                 </TabBar>
             </div>
@@ -254,7 +267,7 @@ textarea {
             <div class="spacer">
                 <TabBar tabs={["output", "source"]} let:tab bind:active={outputTab}>
                     <Tab {tab} minWidth>
-                        <Label>{tab}</Label>
+                        <TabLabel>{tab}</TabLabel>
                     </Tab>
                 </TabBar>
             </div>

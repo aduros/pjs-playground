@@ -47,14 +47,17 @@ export default {
 		svelte({
 			compilerOptions: {
 				// enable run-time checks when not in production
-				dev: !production
-			}
+				dev: !production,
+                css: true,
+			},
+            emitCss: false,
 		}),
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
 		// css({ output: 'bundle.css' }),
         postcss({
-            extract: true,
+            extensions: ['.scss', '.sass'],
+            extract: false,
             minimize: true,
             use: [
                 ['sass', {
