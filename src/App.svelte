@@ -13,6 +13,7 @@ xyz,50
     let lastError = null;
     let generatedProgram = null;
     let programOutput = null;
+    let outputTab;
 
     import { PassThrough } from "stream";
     import shellParser from "shell-parser";
@@ -51,10 +52,11 @@ xyz,50
     }
 
     async function run (command, input) {
+        let showSource = false;
         try {
             const args = shellParser(command);
             if (args[0] != "pjs") {
-                throw new Error("Command must start with pjs");
+                throw new Error("Command must start with \"pjs\"");
             }
 
             let action;
@@ -130,6 +132,7 @@ xyz,50
                             jsonFilter: options.json,
                             markupSelector: markupSelector,
                         });
+                        showSource = true;
 
                         if (options.explain) {
                             log(generatedProgram+"\n");
@@ -145,10 +148,7 @@ xyz,50
 
                             const fn = new Function("process", "FILENAME", "require",
                                 "return " + generatedProgram);
-                            resolve(fn(process, null, dummyRequire).catch(function (error) {
-                                console.error(error);
-                                throw new Error("An error occurred when running your script. Consider using --explain to help debug.\n\n"+error.message);
-                            }));
+                            resolve(fn(process, null, dummyRequire));
                         }
                     });
                 });
@@ -168,24 +168,28 @@ xyz,50
 
         } catch (error) {
             lastError = error;
-            programOutput = error.message;
-            generatedProgram = null;
+            programOutput = "";
+            if (!showSource) {
+                generatedProgram = null;
+            }
 
             console.error(error);
         }
     }
 
     $: run(command, input);
+
+    import Button from '@smui/button';
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text/index';
+    import Tab, {Icon, Label} from '@smui/tab';
+    import TabBar from '@smui/tab-bar';
+import Menu, {SelectionGroup, SelectionGroupIcon} from '@smui/menu';
+      import List, {Item, Separator, Text, PrimaryText, SecondaryText, Graphic} from '@smui/list';
+    let menu;
 </script>
 
 <style>
-.hasError {
-    color: red;
-}
-input, textarea {
-    font-family: monospace;
-}
-
 .hbox {
     display: flex;
 }
@@ -198,22 +202,63 @@ input, textarea {
 }
 main {
     height: 100%;
+    max-width: 1024px;
+    margin: auto;
 }
 
-.pjs-output {
-    border: none;
-}
+/* .pjs-output { */
+/*     border: none; */
+/* } */
 textarea {
     resize: none;
+    border: none;
+}
+
+.spacer {
+    margin-bottom: 10px;
 }
 </style>
 
 <main class="vbox">
-    <div class="vbox">
-        <input bind:value={command} class="pjs-program {lastError ? "hasError" : ""}" spellcheck="false">
+    <div class="hbox" style="margin: 20px 20px 0 20px">
+        <div class="flex1">
+            <Textfield bind:value={command} style="width: 100%"></Textfield>
+            <HelperText persistent style="color: red">{lastError ? lastError.message : ""}</HelperText>
+        </div>
+        <div style="margin-top: 10px">
+            <Button on:click={() => menu.setOpen(true)}>Examples</Button>
+            <Menu bind:this={menu}>
+                <List>
+                <Item><Text>Example 1</Text></Item>
+                <Item><Text>Example 2</Text></Item>
+                <Item><Text>Example 3</Text></Item>
+                <Separator />
+                <Item><Text>Example 4</Text></Item>
+                <Item><Text>Example 5</Text></Item>
+                </List>
+            </Menu>
+        </div>
     </div>
-    <div class="vbox flex1">
-        <textarea bind:value={input} class="pjs-input flex1" spellcheck="false"></textarea>
-        <textarea class="pjs-output flex1 {lastError ? "hasError" : ""}" readonly>{programOutput}</textarea>
+    <div class="hbox flex1" style="margin: 0 20px 20px 20px">
+        <div class="vbox flex1">
+            <div class="spacer">
+                <TabBar tabs={["Input"]} let:tab>
+                    <Tab {tab} minWidth>
+                        <Label>{tab}</Label>
+                    </Tab>
+                </TabBar>
+            </div>
+            <textarea bind:value={input} class="pjs-input flex1" spellcheck="false"></textarea>
+        </div>
+        <div class="vbox flex1">
+            <div class="spacer">
+                <TabBar tabs={["output", "source"]} let:tab bind:active={outputTab}>
+                    <Tab {tab} minWidth>
+                        <Label>{tab}</Label>
+                    </Tab>
+                </TabBar>
+            </div>
+            <textarea class="flex1" readonly>{outputTab == "output" ? programOutput : generatedProgram}</textarea>
+        </div>
     </div>
 </main>

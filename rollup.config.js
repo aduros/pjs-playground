@@ -4,7 +4,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
-import css from 'rollup-plugin-css-only';
+// import css from 'rollup-plugin-css-only';
+import postcss from 'rollup-plugin-postcss';
 import nodeGlobals from 'rollup-plugin-node-globals';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
 
@@ -51,7 +52,19 @@ export default {
 		}),
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
-		css({ output: 'bundle.css' }),
+		// css({ output: 'bundle.css' }),
+        postcss({
+            extract: true,
+            minimize: true,
+            use: [
+                ['sass', {
+                    includePaths: [
+                        './src/theme',
+                        './node_modules'
+                    ]
+                }]
+            ]
+        }),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
