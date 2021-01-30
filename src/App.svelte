@@ -18,7 +18,14 @@
     import xmlIterator from "pjs-tool/lib/xml-iterator";
 
     let command = "pjs '_.toUpperCase()'";
-    let input = "hello\nbeautiful\nworld";
+    let input = [
+        "There once was a man from Nantucket",
+        "Who kept all his cash in a bucket.",
+        "But his daughter named Nan,",
+        "Ran away with a man",
+        "And as for the bucket, Nantucket.",
+    ].join("\n");
+
     let lastError = null;
     let generatedProgram = null;
     let programOutput = null;
@@ -213,7 +220,7 @@
 }
 main {
     height: 100%;
-    max-width: 1024px;
+    max-width: 1140px;
     margin: auto;
 }
 textarea {
@@ -229,8 +236,8 @@ textarea {
 <main class="vbox">
     <div style="margin: 0px 20px 0 20px">
       <h2>pjs playground</h2>
-      <p><a href="https://github.com/aduros/pjs">pjs</a> is a command-line tool for text
-      processing. Try a demo below or check out some <a href="#">examples</a>.</p>
+      <p><a href="https://github.com/aduros/pjs"><b>pjs</b></a> is a command-line tool for text processing.
+      Try the interactive demo below or check out some <a href="https://github.com/aduros/pjs#examples">examples</a>.</p>
     </div>
     <div class="hbox" style="margin: 80px 20px 0 20px">
         <div class="flex1">

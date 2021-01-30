@@ -1,0 +1,5 @@
+#!/bin/sh -e
+
+npm run build
+rm -f public/build/bundle.js.map
+rsync -avz public/ aduros:web/pjs/
